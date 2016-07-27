@@ -1,0 +1,6 @@
+This folder contains the R scripts for analyzing the insect communities and determining whether/which traits influence associated insect communities.
+
+There are two main analyses:
+
+    - PerMANOVA (at the individual tree-level)
+    - Species Indicator Analysis (at the tree genotype-level)
