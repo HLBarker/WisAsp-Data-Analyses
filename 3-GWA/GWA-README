@@ -1,0 +1,7 @@
+This folder contains the scripts for Genome-wide association analyses. 
+
+This includes scripts for the various pipelines:
+
+    - SNP filtering 
+    - Population structure inference
+    - GWAS (both univariate + multivariate)
