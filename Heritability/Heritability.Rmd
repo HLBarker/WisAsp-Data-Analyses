@@ -1,0 +1,69 @@
+---
+title: "Heritability"
+author: "Hilary Barker"
+date: "11/18/2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Heritability background information
+
+Heritability is a measure of how much variance in a trait is due to the genetics of the population. As such, $H^{2} = Var(G)/Var(P)$
+
+Heritability (in this case "broad-sense heritability") is a value from 0 to 1. Traits with high heritability (>0.50) are traits that are influenced primarily by the genetics of the population, while traits with low heritability (<0.50) are traits that are influenced primarily by the environment that surrounds the population. 
+
+```{r setupdata, echo=FALSE}
+# Load packages ---------------------------------------------------------------
+library(MASS)
+library(plyr)
+library(lme4)
+
+# Load functions --------------------------------------------------------------
+source("R/TransformationFunction.R")
+source("R/HeritabilityFunction.R")
+
+# Import and clean up data ----------------------------------------------------
+Trait <- read.csv("~/Desktop/WisAsp2014_15_TreeTraits/WisAsp Finalized Trait Data 2014_2015.csv")
+Trait["Blk"] <- as.factor(Trait$Blk)
+Trait["Planting.Year"] <- as.factor(Trait$Planting.Year)
+TraitMat <- as.matrix(cbind(Trait[,11:22], Trait[,26:58]))
+TraitData <- as.data.frame(TraitMat)
+TraitData <- cbind(TraitData, Trait$Blk, Trait$Geno)
+colnames(TraitData) <- c("Volume2012", "Volume2014", "VolumeS2015", "VolumeF2015", 
+                         "BA2012", "BA2014", "BAS2015", "BAF2015", "AvgBA2014", "AvgBA2015",
+                         "AvgVolume2014", "AvgVolume2015", "VolumeGrowth2013", "VolumeGrowth2014",
+                         "VolumeGrowth2012_2015", "BAI2013", "BAI2014", "BAI2012_2015", "AvgEFN2014",
+                         "sdEFN2014", "totEFN2014", "SLA2014", "LA2014", "SLA2015", "LA2015",
+                         "BB2014", "BB2015", "BS2014", "BS2015", "GS2014", "GS2015", "CT2014", 
+                         "CT2015", "Salicortin2014", "Salicortin2015", "Tremulacin2014", 
+                         "Tremulacin2015", "PG2014", "PG2015", "DefChem2014", "DefChem2015",
+                         "CN2014", "CN2015", "N2014", "N2015", "Block", "Genotype")
+TraitData <- na.omit(TraitData)
+```
+## Heritability example
+
+In this example, we are calculating the heritability of tree traits (i.e., individual leaf area, timing of bud break, levels of chemical compounds found in the leaves). The population of trees we are studying are 515 different clones of aspen (*Populus tremuloides*) that were collected from throughout WI (USA), propogated from rootstock, and planted in a common garden (<https://hilarybarker.wordpress.com/research/wisasp-genetic-mapping-garden/>). 
+
+Due to the design of the garden and the nature of the trees, we need to calculate our heritabilities in a particular way. To get the genetypic and phenotypic variances needed for the heritability equation (above), we need to use a mixed effects model:
+$$x_{jkl} = u+b_{j}+g_{k}+s_{jkl}+e_{jkl}$$
+where *x_{jkl}* is the phenotypic value for the *lth* individual tree from the *jth* experimental block and the *kth* genotype. All effects are random, except for tree size *(s_{jkl})*, which is a fixed effect covariate. We add tree size as a covariate since many traits are a function of tree size and ontogeny. The grand mean is *u*, and *e_jkl* is the error.   
+
+```{r heritability, echo=FALSE}
+# Heritability for individual leaf area
+lambda <- transformation(TraitData$LA2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log)  
+heritability(TraitData$LA2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log, lambda)
+
+# Heritability for timing of bud break
+lambda <- transformation(TraitData$BB2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log)  
+heritability(TraitData$BB2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log, lambda)
+
+# Heritability for tremulacin (a chemical compound found in the leaves of aspen)
+lambda <- transformation(TraitData$Tremulacin2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log)  
+heritability(TraitData$Tremulacin2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log, lambda)
+
+```
+
+
