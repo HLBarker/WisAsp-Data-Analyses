@@ -24,6 +24,7 @@ library(lme4)
 # Load functions --------------------------------------------------------------
 source("R/TransformationFunction.R")
 source("R/HeritabilityFunction.R")
+source("R/HeritabilityConfidenceIntervals.R")
 
 # Import and clean up data ----------------------------------------------------
 Trait <- read.csv("~/Desktop/WisAsp2014_15_TreeTraits/WisAsp Finalized Trait Data 2014_2015.csv")
@@ -55,15 +56,17 @@ where *x_{jkl}* is the phenotypic value for the *lth* individual tree from the *
 # Heritability for individual leaf area
 lambda <- transformation(TraitData$LA2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log)  
 heritability(TraitData$LA2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log, lambda)
+confH2(m)
 
 # Heritability for timing of bud break
 lambda <- transformation(TraitData$BB2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log)  
 heritability(TraitData$BB2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log, lambda)
+confH2(m)
 
 # Heritability for tremulacin (a chemical compound found in the leaves of aspen)
 lambda <- transformation(TraitData$Tremulacin2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log)  
 heritability(TraitData$Tremulacin2014, TraitData$Genotype, TraitData$Block, TraitData$AvgVolume2014, log, lambda)
-
+confH2(m)
 ```
 
 
