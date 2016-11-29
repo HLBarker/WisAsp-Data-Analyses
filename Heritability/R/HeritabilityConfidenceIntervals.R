@@ -5,7 +5,7 @@ confH2 <- function(lmermodel) {
   #  
   #  Args:
   #    lmermodel = mixed effects model of class mer.mod that is used to calculate H^2
-  #      these models are made using the lmer() in the lme4 package
+  #    these models are made using the lmer() in the lme4 package
   #
   #  Returns: 
   #    95% Confidence intervals around the H^2 estimates for a trait
