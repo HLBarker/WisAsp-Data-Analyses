@@ -1,5 +1,5 @@
-#  Author = Hilary Barker
-#  Function for heritability confidence intervals
+# Author = Hilary Barker
+# Function for heritability confidence intervals
 confH2 <- function(lmermodel) {
   #  Computes 95% confidence intervals for broad-sense heritability (H^2) estimates
   #  
