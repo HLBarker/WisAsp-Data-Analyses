@@ -1,6 +1,8 @@
 # Author = Hilary Barker
 # This script identifies which species in a community (e.g., insect community) appear to respond to 
 #   environmental variables (e.g., traits of the tree that the insect community is found on)
+
+
 # Load packages ---------------------------------------------------------------
 library(labdsv)
 library(dplyr)
@@ -33,6 +35,7 @@ str(TraitMean)
 All <- merge(TraitMean, InsMean, by.x = "GENO", by.y = "GENO")  # merge dataframes 
 All <- na.omit(cbind(All$GENO, All[,8:30], All[,38:51]))
 str(All)
+
 
 # Idenfity the extreme trees  -------------------------------------------------
   #  separate the data into two groups: (1) insect communities found on trees that have extremely 
