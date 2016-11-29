@@ -1,3 +1,5 @@
+# Author = Hilary Barker
+# Heritability function
 library(lme4)
 heritability <- function(trait, genotype, block, covariate, transformation, boxcoxlambda) { 
     #  Computes the broad-sense heritability (H^2) for a given trait in a complete randomized block experimental design
