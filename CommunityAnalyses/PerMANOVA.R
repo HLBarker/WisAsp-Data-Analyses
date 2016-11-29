@@ -1,3 +1,9 @@
+# Author = Hilary Barker
+# This script calculates whether quantitative variables (e.g., tree traits) are 
+#   associated with differences in community composition (e.g., insect communities
+#     found in the tree's canopies)
+
+
 # Load packages ---------------------------------------------------------------
 library(labdsv)
 library(dplyr)
@@ -20,19 +26,28 @@ InsSpecies <- read.csv("~/Desktop/WisAsp Insect Data/WisAsp_InsectSurvey2014_spe
 # Combine data -----------------------------------------------------------------
 InsSpdata <- InsSpecies[,9:22]
 InsSpdata["Geno"] <- InsSpecies$GENO
-InsSpdataMean <- InsSpdata %>% group_by(Geno) %>% summarise_each(funs(mean)) #get insect means by genotype
+InsSpdataMean <- InsSpdata %>% group_by(Geno) %>% summarise_each(funs(mean))  # get insect means by genotype
 str(InsSpdataMean)
 Trait2014data <- Trait2014[,8:30]
 Trait2014data["Geno"] <- Trait2014$Geno
-Trait2014Mean <- Trait2014 %>% group_by(Geno) %>% summarise_each(funs(mean)) #get trait means by genotype
+Trait2014Mean <- Trait2014 %>% group_by(Geno) %>% summarise_each(funs(mean))  # get trait means by genotype
 
-All <- merge(Trait2014Mean, InsSpdataMean, by.x = "Geno", by.y = "Geno") # merge dataframes = resulting dataframe only has the tree information for the trees that were present in both the insect data AND the trait data!
+All <- merge(Trait2014Mean, InsSpdataMean, by.x = "Geno", by.y = "Geno")  # merge dataframes = resulting dataframe 
+  #  only has the tree information for the trees that were present in both the insect data AND the trait data!
 str(All)
 
 # PerMANOVA -----------------------------------------------------------------
-  # PerMANOVA calculates whether an x-variable (in this case a tree trait) is associated with a distance matrix (in this case the distance
-  # matrix determines how similar insect communities are on pairs of trees)
-permanova <- function(trait){
+permanova <- function(trait) {
+  # PerMANOVA calculates whether an x-variable (in this case a tree trait) is associated with a 
+  # distance matrix (in this case the distance matrix determines how similar insect communities 
+  # are on pairs of trees)
+  #
+  # Args:
+  #    trait = quantitative variable that may be linked to the composition of the insect community
+  #
+  # Returns:
+  #   The summary of the PerMANOVA model, showing whether "trait" is significantly associated
+  #     with the given trait
   DATA <- as.data.frame(cbind(trait, All$Harmandia, All$Phyllocolpa, All$PetioleGall, All$LeafEdgeMine,All$SerpMine, 
                               All$BlotchMine, All$LombardyMine, All$Gluphisia, All$GreenNematus, All$RustylinedLeaftier, All$ObliqueBandedLeafRoller,
                               All$SmokeyAphids, All$GreenAphids, All$Lasius_neoniger))
@@ -41,9 +56,9 @@ permanova <- function(trait){
   adonis(InsDis ~ trait, method = "bray", na.action = na.omit)
 }
 
-permanova(All$Latitude) # test to make sure that the function works
+permanova(All$Latitude)  # test to make sure that the function works
 
-apply(All[,8:30], 2, permanova) # run the PerMANOVA function on all of the tree traits of interest
+apply(All[,8:30], 2, permanova)  # run the PerMANOVA function on all of the tree traits of interest
 
 
 
