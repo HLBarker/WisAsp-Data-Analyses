@@ -43,7 +43,16 @@ str(All)
   #  low values of the trait in interest. Then perform species indicator analyses wich identifies
   #  the insect species that define the two different community groups and shed light on which
   #  insects are influenced by a given trait and how (do they favor high or low trait levels?)
-extremetrees <- function(trait){
+extremetrees <- function(trait) {
+  # Computes species indicator analysis on the communities found in extreme environments 
+  #   (in this case, extreme tree traits)
+  #
+  # Args:
+  #   trait = quantitative variable that may influence species within the community
+  #
+  # Returns:
+  #   Species indicator results for whether particular insects are significantly 
+  #   associated with environmental/tree variables
   All <- All[order(trait),]
   Mostextreme <- All[86:114,25:38]  # get the most extreme insect data
   Mostextreme$Ext <- rep(2,nrow(Mostextreme))  # add on a column of ones
