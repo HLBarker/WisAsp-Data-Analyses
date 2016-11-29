@@ -1,3 +1,5 @@
+# Author = Hilary Barker
+# Function for finding the BoxCox transformation for calculating heritability
 library(MASS)
 transformation <- function(trait, genotype, block, covariate, transformation) { 
     #  Identifies the BoxCox transformation for a trait y-variable in a heritability model
