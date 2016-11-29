@@ -1,7 +1,7 @@
 # Author = Hilary Barker
 # This script calculates whether quantitative variables (e.g., tree traits) are 
-#   associated with differences in community composition (e.g., insect communities
-#     found in the tree's canopies)
+# associated with differences in community composition (e.g., insect communities
+# found in the tree's canopies)
 
 
 # Load packages ---------------------------------------------------------------
@@ -33,7 +33,7 @@ Trait2014data["Geno"] <- Trait2014$Geno
 Trait2014Mean <- Trait2014 %>% group_by(Geno) %>% summarise_each(funs(mean))  # get trait means by genotype
 
 All <- merge(Trait2014Mean, InsSpdataMean, by.x = "Geno", by.y = "Geno")  # merge dataframes = resulting dataframe 
-  #  only has the tree information for the trees that were present in both the insect data AND the trait data!
+  # only has the tree information for the trees that were present in both the insect data AND the trait data!
 str(All)
 
 # PerMANOVA -----------------------------------------------------------------
@@ -47,7 +47,7 @@ permanova <- function(trait) {
   #
   # Returns:
   #   The summary of the PerMANOVA model, showing whether "trait" is significantly associated
-  #     with the given trait
+  #   with the given trait
   DATA <- as.data.frame(cbind(trait, All$Harmandia, All$Phyllocolpa, All$PetioleGall, All$LeafEdgeMine,All$SerpMine, 
                               All$BlotchMine, All$LombardyMine, All$Gluphisia, All$GreenNematus, All$RustylinedLeaftier, All$ObliqueBandedLeafRoller,
                               All$SmokeyAphids, All$GreenAphids, All$Lasius_neoniger))
