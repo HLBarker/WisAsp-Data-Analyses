@@ -1,0 +1,146 @@
+# Author = Hilary Barker
+# This script calculates whether quantitative variables (e.g., tree traits) are 
+# associated with insect species and communities using multilevel models
+  # 2014 common species data
+
+# -----------------------------------------------------------------------------
+# Load libraries
+# -----------------------------------------------------------------------------
+library(vegan)
+library(lme4)
+library(dplyr)
+library(LMERConvenienceFunctions)
+
+
+# -----------------------------------------------------------------------------
+# Load data
+# -----------------------------------------------------------------------------
+Trait <- read.csv("~/Desktop/WisAsp2014_15_TreeTraits/WisAsp Finalized Trait Data 2014_2015.csv")
+Trait["Blk"] <- as.factor(Trait$Blk)
+Trait <- cbind(Trait[,1:3], Trait[,5:10], Trait[,19:22], Trait[,26:58])
+str(Trait)
+colnames(Trait) <- c("Blk", "Row", "Pos", "ID", "Geno", "PlantingDate", "PlantingYear", "Latitude", "Longitude", "AvgBA2014", "AvgBA2015", 
+                     "AvgSize2014", "AvgSize2015", "Growth2012_2014", "Growth2014_2015", "Growth2012_2015", "BAI2012_2014", "BAI2014_2015",
+                     "BAI2012_2015", "AvgEFN2014", "SDEFN2014", "TotEFN2014", "SLA2014", "LA2014", "SLA2015", "LA2015", "BB2014", "BB2015", "BS2014",
+                     "BS2015", "GS2014", "GS2015", "CT2014", "CT2015", "Salicortin2014","Salicortin2015", "Tremulacin2014", "Tremulacin2015",
+                     "PG2014", "PG2015", "TotalDefChem2014", "TotalDefChem2015", "CN2014", "CN2015", "N2014", "N2015")
+# Normalize trait data with "scale()"
+Trait2014 <- cbind(Trait[,1:9], scale(Trait[ , grepl( "2014" , names( Trait ) ) ]))
+
+
+InsSpecies <- read.csv("~/Desktop/WisAsp Insect Data/WisAsp_InsectSurvey2014_species.csv")
+InsSp <- InsSpecies[ , 9:22]
+InsSp["Geno"] <- InsSpecies$GENO
+
+
+# -----------------------------------------------------------------------------
+# Average data by genotype
+# -----------------------------------------------------------------------------
+InsSpdataMean <- InsSp %>% group_by(Geno) %>% summarise_each(funs(mean))  # get insect means by genotype
+
+Trait2014data <- Trait2014[,8:30]
+Trait2014data["Geno"] <- Trait2014$Geno
+Trait2014Mean <- Trait2014 %>% group_by(Geno) %>% summarise_each(funs(mean))  # get trait means by genotype
+
+
+# -----------------------------------------------------------------------------
+# Combine data in multilevel model structure
+# -----------------------------------------------------------------------------
+
+All <- merge(Trait2014Mean, InsSpdataMean, by.x = "Geno", by.y = "Geno")  # merge dataframes = resulting dataframe 
+# only has the tree information for the trees that were present in both the insect data AND the trait data!
+str(All)
+
+
+Combined <- cbind(All[,1], All[,10:31], factor('Harmandia')) 
+names(Combined)[23] <- 'ABUNDANCE' 
+names(Combined)[1] <- 'Geno' 
+
+names(Combined)[24] <- 'SPP' 
+levels(Combined$SPP) <- c("Harmandia","Phyllocolpa","PetioleGall","LeafEdgeMine","SerpMine",
+                          "BlotchMine", "LombardyMine", "Gluphisia", "GreenNematus", "RustylinedLeaftier",
+                          "ObliqueBandedLeafRoller", "SmokeyAphids", "GreenAphids", "Lasius_neoniger")
+
+T <- dim(Combined)[1] 
+T #[1] 329
+t <- T 
+t  #[1] 329
+
+names(Combined)
+
+for(i in 32:44){  # the rest of the insect data in All
+  Combined[(t+1):(t+T),] <- cbind(All[,1], All[,10:30], All[,i], names(All)[i])
+  t <- t+T
+}
+
+t #[1] 1974 = (329*6)
+str(Combined)
+Combined["PRESENCE"] <- decostand(Combined$ABUNDANCE, "pa")
+Combined <- na.omit(Combined)
+
+Combined$AvgSize2014_2 <- Combined$AvgSize2014^2
+Combined$AvgEFN2014_2 <- Combined$AvgEFN2014^2
+Combined$SLA2014_2 <- Combined$SLA2014^2
+Combined$LA2014_2 <- Combined$LA2014^2
+Combined$BB2014_2 <- Combined$BB2014^2
+Combined$BS2014_2 <- Combined$BS2014^2
+Combined$CT2014_2 <- Combined$CT2014^2
+Combined$PG2014_2 <- Combined$PG2014^2
+Combined$N2014_2 <- Combined$N2014^2
+
+
+# -----------------------------------------------------------------------------
+# Binomial Multilevel model 
+# -----------------------------------------------------------------------------
+MLM <- lmer(PRESENCE ~ (1|SPP) + AvgSize2014 + AvgSize2014_2 + AvgEFN2014 +
+              AvgEFN2014_2 + SLA2014 + SLA2014_2 + LA2014 +
+              LA2014_2 + BB2014_2 +
+              BB2014 + BS2014 + BS2014_2 + CT2014 + CT2014_2 +
+              PG2014 + PG2014_2 + N2014 + N2014_2, 
+            family = binomial,
+            data = Combined)
+summary(MLM) # AIC 2391.9
+# Significant fixed effects:
+  # tree size
+  # tree size ^2
+  # EFN 
+  # EFN ^2
+  # SLA
+  # SLA ^2
+  # BB ^2
+  # BS
+  # CT ^2
+
+# -----------------------------------------------------------------------------
+# Binomial Multilevel model - forward selection
+# -----------------------------------------------------------------------------
+#MLM1 <- lmer(PRESENCE ~ (1|SPP) + AvgSize2014 + AvgSize2014_2 + AvgEFN2014 +
+#              AvgEFN2014_2 + SLA2014 + SLA2014_2 + BB2014_2 +
+#              BB2014 + BS2014 + CT2014 + CT2014_2, 
+#            family = binomial,
+#            data = Combined)
+
+MLM1 <- lmer(PRESENCE ~ (1|SPP), 
+             family = binomial,
+             data = Combined)
+
+
+MLM2 <- ffRanefLMER.fnc(model = MLM1, ran.effects = c("(0 + AvgSize2014|SPP)",
+                        "(0 + AvgEFN2014|SPP)", "(0 + SLA2014|SPP)", "(0 + LA2014|SPP)",
+                        "(0 + BB2014|SPP)", "(0 + BS2014|SPP)", "(0 + CT2014|SPP)",
+                        "(0 + PG2014|SPP)", "(0 + N2014|SPP)"), log.file = FALSE)
+summary(MLM2) # added BS and EFN
+
+MLM3 <- glmer(PRESENCE ~ (1|SPP) + AvgSize2014 + AvgSize2014_2 + AvgEFN2014 +
+               AvgEFN2014_2 + SLA2014 + SLA2014_2 + BB2014_2 +
+               BB2014 + BS2014 + CT2014 + CT2014_2 + (0 + AvgEFN2014|SPP) + (0 + BS2014|SPP), 
+             family = binomial,
+             data = Combined)
+
+#### Final Model ##############################################################
+summary(MLM3)
+ranef(MLM3)
+
+#MLM4 <- bfFixefLMER_F.fnc(MLM3, log.file = FALSE)
+#summary(MLM4)
+
