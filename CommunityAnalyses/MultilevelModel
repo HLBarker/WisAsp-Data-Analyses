@@ -46,7 +46,6 @@ Trait2014Mean <- Trait2014 %>% group_by(Geno) %>% summarise_each(funs(mean))  # 
 # -----------------------------------------------------------------------------
 # Combine data in multilevel model structure
 # -----------------------------------------------------------------------------
-
 All <- merge(Trait2014Mean, InsSpdataMean, by.x = "Geno", by.y = "Geno")  # merge dataframes = resulting dataframe 
 # only has the tree information for the trees that were present in both the insect data AND the trait data!
 str(All)
